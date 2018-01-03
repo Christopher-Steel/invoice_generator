@@ -1,7 +1,8 @@
-require 'icalendar'
-require 'time'
-require 'pp'
 require 'csv'
+require 'erb'
+require 'icalendar'
+require 'pp'
+require 'time'
 
 def events_for_timespan(first_day, last_day)
   cal_file = File.open(ARGV[0])
@@ -120,13 +121,36 @@ end
 
 billables = billable_items(days)
 
+def dates_to_string(st, ed)
+  if st == ed
+    st.strftime("%d/%m/%Y")
+  else
+    st.strftime("%d/%m/%y") + " - " + ed.strftime("%d/%m/%y")
+  end
+end
+
+@vat_percent = 20
+@daily_rate = 200
+@billable_items = billables.map do |name, data|
+  billable = {}
+  billable[:description] = name
+  billable[:date_string] = dates_to_string(data[:st], data[:ed])
+  billable[:amount] = data[:amount]
+  billable[:pre_tax_total] = @daily_rate * billable[:amount]
+  billable[:vat] = @vat_percent / 100 * billable[:pre_tax_total]
+  billable[:total] = billable[:pre_tax_total] + billable[:vat]
+  billable
+end
+
+puts @billable_items
+
+erb = ERB.new(File.read("./bill.erb"))
+
+File.write("./result.html", erb.result(binding))
+
 CSV.open('./output.csv', 'wb') do |csv|
   billables.each do |name, data|
-    date_string = if data[:st] == data[:ed]
-      data[:st].strftime("%d/%m/%Y")
-    else
-      data[:st].strftime("%d/%m/%y") + " - " + data[:ed].strftime("%d/%m/%y")
-    end
+    date_string = dates_to_string(data[:st], data[:ed])
     csv << [name, date_string, data[:amount]]
   end
 end

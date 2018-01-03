@@ -1,0 +1,27 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <p>VAT is set at <%= @vat_percentage %>% for all billables. The daily rate is £<%= @daily_rate %>.</p>
+    <table>
+      <tr>
+        <th>Description</th>
+        <th>Dates</th>
+        <th>Days</th>
+        <th>Pre-tax Total</th>
+        <th>VAT</th>
+        <th>Total</th>
+      </tr>
+      <% @billable_items.each do |item| %>
+        <tr>
+          <td><%= item[:description] %></td>
+          <td><%= item[:date_string] %></td>
+          <td><%= item[:amount] %></td>
+          <td><%= item[:pre_tax_total] %></td>
+          <td><%= item[:vat] %></td>
+          <td><%= item[:total] %></td>
+        </tr>
+      <% end %>
+    </table>
+  </body>
+</html>
