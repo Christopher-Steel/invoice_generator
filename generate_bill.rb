@@ -4,6 +4,8 @@ require 'icalendar'
 require 'pp'
 require 'time'
 
+Encoding.default_external = Encoding.find('UTF-8')
+
 def events_for_timespan(first_day, last_day)
   cal_file = File.open(ARGV[0])
   cal = Icalendar::Calendar.parse(cal_file).first
@@ -43,8 +45,8 @@ def name_from_summary(event)
   return event.summary
 end
 
-f_day = Date.parse("2017-10-18T:00:00:00+00:00Z")
-l_day = Date.parse("2017-11-25T:00:00:00+00:00Z")
+f_day = Date.parse("2017-11-27T:00:00:00+00:00Z")
+l_day = Date.parse("2017-12-31T:00:00:00+00:00Z")
 
 accepted = events_for_timespan(f_day, l_day)
 puts "ACCEPTED:"
@@ -129,18 +131,43 @@ def dates_to_string(st, ed)
   end
 end
 
-@vat_percent = 20
-@daily_rate = 200
+@vat_percent = 20.0
+@daily_rate = 200.0
 @billable_items = billables.map do |name, data|
   billable = {}
   billable[:description] = name
   billable[:date_string] = dates_to_string(data[:st], data[:ed])
   billable[:amount] = data[:amount]
   billable[:pre_tax_total] = @daily_rate * billable[:amount]
-  billable[:vat] = @vat_percent / 100 * billable[:pre_tax_total]
+  billable[:vat] = @vat_percent / 100.0 * billable[:pre_tax_total]
   billable[:total] = billable[:pre_tax_total] + billable[:vat]
   billable
 end
+
+@sub_total = @billable_items.inject(0) { |sum, item| sum + item[:pre_tax_total] }
+@vat_total = @billable_items.inject(0) { |sum, item| sum + item[:vat] }
+@grand_total = @sub_total + @vat_total
+
+def money_format(f)
+  sprintf("£%.2f", f)
+end
+
+@billable_items = @billable_items.map do |item|
+  item[:amount] = item[:amount].round(2)
+  [:pre_tax_total, :vat, :total].each { |s| item[s] = money_format(item[s]) }
+  item
+end
+
+@billable_fields = [:description, :date_string, :amount, :pre_tax_total, :vat, :total]
+
+@billable_format_rules = {
+  description: {title: "Description", classes: ""},
+  date_string: {title: "Dates", classes: "text-center"},
+  amount: {title: "Days", classes: "text-right"},
+  pre_tax_total: {title: "Pre-Tax Total", classes: "text-right"},
+  vat: {title: "VAT", classes: "text-right"},
+  total: {title: "Total", classes: "text-right"}
+}
 
 puts @billable_items
 

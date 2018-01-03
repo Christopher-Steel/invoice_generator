@@ -1,27 +1,104 @@
-<html>
+<!doctype html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="bill.css">
   </head>
   <body>
-    <p>VAT is set at <%= @vat_percentage %>% for all billables. The daily rate is £<%= @daily_rate %>.</p>
-    <table>
-      <tr>
-        <th>Description</th>
-        <th>Dates</th>
-        <th>Days</th>
-        <th>Pre-tax Total</th>
-        <th>VAT</th>
-        <th>Total</th>
-      </tr>
-      <% @billable_items.each do |item| %>
-        <tr>
-          <td><%= item[:description] %></td>
-          <td><%= item[:date_string] %></td>
-          <td><%= item[:amount] %></td>
-          <td><%= item[:pre_tax_total] %></td>
-          <td><%= item[:vat] %></td>
-          <td><%= item[:total] %></td>
-        </tr>
-      <% end %>
-    </table>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <img class="css-logo" src="cssoft-logo.png" alt="chris steel software logo">
+        </div>
+        <h1 class="col col-3 text-right">INVOICE</h1>
+      </div>
+      <div class="row">
+        <div class="col">
+          <h3>Chris Steel Software LTD</h3>
+          <p class="company address">
+            2 Hawthorn Close<br>
+            Old Dalby<br>
+            LE14 3LN
+          </p>
+          <h6>To:</h4>
+          <p>
+            NaturalMotion Games Ltd<br>
+            accountspayable@naturalmotion.com<br>
+            Attn: AP<br>
+            10 St. Ebbes Street, Oxford<br>
+            Oxon, OX1 1PT<br>
+            United Kingdom
+          </p>
+        </div>
+        <div class="col col-4">
+          <div id="instance-info">
+            <div class="row">
+              <div class="col">Invoice issued on</div>
+              <div class="col"><%= @current_date %></div>
+            </div>
+            <div class="row">
+              <div class="col">Client reference</div>
+              <div class="col">UK01</div>
+            </div>
+            <div class="row">
+              <div class="col">Invoice reference</div>
+              <div class="col">8</div>
+            </div>
+            <div class="row">
+              <div class="col">Payment terms</div>
+              <div class="col">Net 30</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="additional-information" class="container">
+        <h6>Additional information</h6>
+        <p>
+          For each piece of work, the JIRA DOTQA project ticket ID is mentioned
+          in brackets before the description. The days listed for each item are
+          approximate and the precise amount is reflected in the grand total.
+        </p>
+      </div>
+      <p>VAT is set at <%= @vat_percent %>% for all billables. The daily rate is £<%= @daily_rate %>.</p>
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <% @billable_fields.map { |x| @billable_format_rules[x].values }.each do |title, classes| %>
+              <th scope="col" class="<%= classes %>"><%= title %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @billable_items.each do |item| %>
+            <tr>
+              <% @billable_fields.each do |x| %>
+                <td class="<%= x.to_s.gsub("_", "-") %> <%= @billable_format_rules[x][:classes] %>"><%= item[x] %></td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" ></td>
+            <th scope="row" class="text-right" colspan="2">Sub Total</td>
+            <td class="text-right"><%= money_format(@sub_total) %></td>
+          </tr>
+          <tr>
+            <td colspan="3"></td>
+            <th scope="row" class="text-right" colspan="2">VAT Total</td>
+            <td class="text-right"><%= money_format(@vat_total) %></td>
+          </tr>
+          <tr>
+            <td colspan="3"></td>
+            <th scope="row" class="text-right" colspan="2">Grand Total</td>
+            <td class="text-right"><%= money_format(@grand_total) %></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div>
+        <h2>We appreciate your business!</h2>
+      </div>
+    </div>
   </body>
 </html>
