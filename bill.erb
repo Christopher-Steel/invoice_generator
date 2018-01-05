@@ -27,8 +27,7 @@
             accountspayable@naturalmotion.com<br>
             Attn: AP<br>
             10 St. Ebbes Street, Oxford<br>
-            Oxon, OX1 1PT<br>
-            United Kingdom
+            Oxon, OX1 1PT, United Kingdom
           </p>
         </div>
         <div class="col col-4">
@@ -56,49 +55,64 @@
         <h6>Additional information</h6>
         <p>
           For each piece of work, the JIRA DOTQA project ticket ID is mentioned
-          in brackets before the description. The days listed for each item are
-          approximate and the precise amount is reflected in the grand total.
+          in brackets before the description.
         </p>
       </div>
       <p>VAT is set at <%= @vat_percent %>% for all billables. The daily rate is £<%= @daily_rate %>.</p>
       <table class="table table-sm">
-        <thead>
-          <tr>
-            <% @billable_fields.map { |x| @billable_format_rules[x].values }.each do |title, classes| %>
-              <th scope="col" class="<%= classes %>"><%= title %></th>
-            <% end %>
-          </tr>
-        </thead>
         <tbody>
-          <% @billable_items.each do |item| %>
+          <% @billable_months.each do |m| %>
+            <tr><th scope="col" colspan="6"><%= m[:label] %></th></tr>
             <tr>
-              <% @billable_fields.each do |x| %>
-                <td class="<%= x.to_s.gsub("_", "-") %> <%= @billable_format_rules[x][:classes] %>"><%= item[x] %></td>
+              <% @billable_fields.map { |x| @billable_format_rules[x].values }.each do |title, classes| %>
+                <th scope="col" class="<%= classes %>"><%= title %></th>
               <% end %>
+            </tr>
+            <% m[:items].each do |item| %>
+              <tr>
+                <% @billable_fields.each do |x| %>
+                  <td class="<%= x.to_s.gsub("_", "-") %> <%= @billable_format_rules[x][:classes] %>"><%= item[x] %></td>
+                <% end %>
+              </tr>
+            <% end %>
+            <tr>
+              <td colspan="3" rowspan="3"></td>
+              <th scope="row" class="text-right" colspan="2">Month Sub Total</td>
+              <td class="text-right"><%= money_format(m[:sub_total]) %></td>
+            </tr>
+            <tr>
+              <th scope="row" class="text-right" colspan="2">Month VAT Total</td>
+              <td class="text-right"><%= money_format(m[:vat_total]) %></td>
+            </tr>
+            <tr>
+              <th scope="row" class="text-right" colspan="2">Month Total</td>
+              <td class="text-right"><%= money_format(m[:grand_total]) %></td>
             </tr>
           <% end %>
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="3" ></td>
+            <td colspan="3" rowspan="3"></td>
             <th scope="row" class="text-right" colspan="2">Sub Total</td>
             <td class="text-right"><%= money_format(@sub_total) %></td>
           </tr>
           <tr>
-            <td colspan="3"></td>
             <th scope="row" class="text-right" colspan="2">VAT Total</td>
             <td class="text-right"><%= money_format(@vat_total) %></td>
           </tr>
           <tr>
-            <td colspan="3"></td>
             <th scope="row" class="text-right" colspan="2">Grand Total</td>
             <td class="text-right"><%= money_format(@grand_total) %></td>
           </tr>
         </tfoot>
       </table>
       <div>
+        <h1>To pay: <%= money_format(@grand_total) %>
+      </div>
+      <div>
         <h2>We appreciate your business!</h2>
       </div>
+
     </div>
   </body>
 </html>
